@@ -8,6 +8,7 @@ import {
   ConfirmBookingParams,
   GetMyBookingsQueryParams,
 } from "@workspace/api-zod";
+import { sendNotification, broadcastNotification, type Notification } from "../lib/ws-manager";
 
 const router: IRouter = Router();
 
@@ -16,6 +17,10 @@ function getUserId(req: { headers: Record<string, string | string[] | undefined>
   if (!raw) return null;
   const id = parseInt(Array.isArray(raw) ? raw[0] : raw, 10);
   return isNaN(id) ? null : id;
+}
+
+function makeId(): string {
+  return Math.random().toString(36).slice(2, 10);
 }
 
 function generateQrCode(bookingId: number): string {
@@ -110,14 +115,41 @@ router.post("/bookings", async (req, res): Promise<void> => {
     notes: parsed.data.notes ?? null,
   }).returning();
 
-  // Generate QR code after creating booking
   const [updatedBooking] = await db.update(bookingsTable)
     .set({ qrCode: generateQrCode(booking.id), status: "confirmed" })
     .where(eq(bookingsTable.id, booking.id))
     .returning();
 
   const [driver] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
-  res.status(201).json(formatBooking(updatedBooking, listing, driver));
+  const formatted = formatBooking(updatedBooking, listing, driver);
+
+  // Notify the host of the new booking
+  const hostNotification: Notification = {
+    id: makeId(),
+    type: "booking_new",
+    title: "New Booking",
+    message: `${driver?.name ?? "Someone"} booked "${listing.title}"`,
+    bookingId: booking.id,
+    listingTitle: listing.title,
+    amount: parseFloat(updatedBooking.totalPrice),
+    createdAt: new Date().toISOString(),
+  };
+  sendNotification(listing.hostId, hostNotification);
+
+  // Notify the driver that booking is confirmed
+  const driverNotification: Notification = {
+    id: makeId(),
+    type: "booking_confirmed",
+    title: "Booking Confirmed",
+    message: `Your spot at "${listing.title}" is confirmed. QR code ready.`,
+    bookingId: booking.id,
+    listingTitle: listing.title,
+    amount: parseFloat(updatedBooking.totalPrice),
+    createdAt: new Date().toISOString(),
+  };
+  sendNotification(userId, driverNotification);
+
+  res.status(201).json(formatted);
 });
 
 router.get("/bookings/:id", async (req, res): Promise<void> => {
@@ -164,6 +196,19 @@ router.post("/bookings/:id/cancel", async (req, res): Promise<void> => {
     db.select().from(listingsTable).where(eq(listingsTable.id, booking.listingId)),
     db.select().from(usersTable).where(eq(usersTable.id, booking.driverId)),
   ]);
+
+  // Notify both parties
+  const cancelNotification: Notification = {
+    id: makeId(),
+    type: "booking_cancelled",
+    title: "Booking Cancelled",
+    message: `Booking for "${listing?.title ?? "your spot"}" has been cancelled.`,
+    bookingId: booking.id,
+    listingTitle: listing?.title,
+    createdAt: new Date().toISOString(),
+  };
+  broadcastNotification([booking.driverId, booking.hostId].filter(id => id !== userId), cancelNotification);
+
   res.json(formatBooking(booking, listing ?? null, driver ?? null));
 });
 
@@ -191,6 +236,20 @@ router.post("/bookings/:id/confirm", async (req, res): Promise<void> => {
     db.select().from(listingsTable).where(eq(listingsTable.id, booking.listingId)),
     db.select().from(usersTable).where(eq(usersTable.id, booking.driverId)),
   ]);
+
+  // Notify driver
+  const confirmNotification: Notification = {
+    id: makeId(),
+    type: "booking_confirmed",
+    title: "Booking Confirmed",
+    message: `Your booking at "${listing?.title ?? "the spot"}" has been confirmed by the host.`,
+    bookingId: booking.id,
+    listingTitle: listing?.title,
+    amount: parseFloat(booking.totalPrice),
+    createdAt: new Date().toISOString(),
+  };
+  sendNotification(booking.driverId, confirmNotification);
+
   res.json(formatBooking(booking, listing ?? null, driver ?? null));
 });
 
