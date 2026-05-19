@@ -98,7 +98,7 @@ export default function Bookings() {
                         <Link href={`/listings/${booking.listingId}`}>
                           <h3 className="text-lg font-semibold hover:text-primary hover:underline line-clamp-1">{booking.listingTitle}</h3>
                         </Link>
-                        <span className="font-bold text-lg">${booking.totalPrice.toFixed(2)}</span>
+                        <span className="font-bold text-lg">₹{booking.totalPrice.toFixed(0)}</span>
                       </div>
                       <p className="text-gray-500 text-sm flex items-center gap-1 mb-4">
                         <MapPin className="w-3.5 h-3.5" />

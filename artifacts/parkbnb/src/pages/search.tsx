@@ -15,13 +15,13 @@ export default function SearchPage() {
   const [params, setParams] = useState({
     query: "",
     minPrice: 0,
-    maxPrice: 50,
+    maxPrice: 500,
   });
 
   const { data, isLoading } = useSearchListings({
     query: params.query || undefined,
     minPrice: params.minPrice > 0 ? params.minPrice : undefined,
-    maxPrice: params.maxPrice < 50 ? params.maxPrice : undefined,
+    maxPrice: params.maxPrice < 500 ? params.maxPrice : undefined,
   });
 
   const listings = data?.listings || [];
@@ -43,12 +43,12 @@ export default function SearchPage() {
         <div className="mb-8">
           <h2 className="text-lg font-semibold mb-4 flex justify-between">
             <span>Price Range</span>
-            <span className="text-sm font-normal text-gray-500">${params.minPrice} - ${params.maxPrice}+ /hr</span>
+            <span className="text-sm font-normal text-gray-500">₹{params.minPrice} - ₹{params.maxPrice}+ /hr</span>
           </h2>
           <Slider 
-            defaultValue={[0, 50]} 
-            max={50} 
-            step={1} 
+            defaultValue={[0, 500]} 
+            max={500} 
+            step={10} 
             onValueChange={(val) => setParams({ ...params, minPrice: val[0], maxPrice: val[1] })}
             className="mb-2"
           />
@@ -93,12 +93,12 @@ export default function SearchPage() {
                 <div className="mb-8">
                   <h2 className="text-sm font-semibold mb-4 flex justify-between">
                     <span>Price Range</span>
-                    <span className="text-xs font-normal text-gray-500">${params.minPrice} - ${params.maxPrice}+</span>
+                    <span className="text-xs font-normal text-gray-500">₹{params.minPrice} - ₹{params.maxPrice}+</span>
                   </h2>
                   <Slider 
-                    defaultValue={[0, 50]} 
-                    max={50} 
-                    step={1} 
+                    defaultValue={[0, 500]} 
+                    max={500} 
+                    step={10} 
                     onValueChange={(val) => setParams({ ...params, minPrice: val[0], maxPrice: val[1] })}
                   />
                 </div>
@@ -142,7 +142,7 @@ export default function SearchPage() {
               <Button 
                 variant="outline" 
                 className="mt-6 rounded-full"
-                onClick={() => setParams({ query: "", minPrice: 0, maxPrice: 50 })}
+                onClick={() => setParams({ query: "", minPrice: 0, maxPrice: 500 })}
               >
                 Clear all filters
               </Button>

@@ -62,7 +62,7 @@ export function ListingCard({ listing }: ListingCardProps) {
         </CardContent>
         <CardFooter className="p-4 pt-0">
           <div className="flex items-baseline gap-1 text-gray-900">
-            <span className="text-lg font-bold">${listing.hourlyRate}</span>
+            <span className="text-lg font-bold">₹{listing.hourlyRate}</span>
             <span className="text-sm text-gray-500">/ hour</span>
           </div>
         </CardFooter>

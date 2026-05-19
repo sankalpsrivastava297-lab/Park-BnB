@@ -33,7 +33,7 @@ const formSchema = z.object({
   address: z.string().min(5, "Address is required"),
   city: z.string().min(2, "City is required"),
   state: z.string().min(2, "State is required"),
-  hourlyRate: z.coerce.number().min(1, "Hourly rate must be at least $1"),
+  hourlyRate: z.coerce.number().min(10, "Hourly rate must be at least ₹10"),
   dailyRate: z.coerce.number().optional(),
   monthlyRate: z.coerce.number().optional(),
   pricingType: z.string().default("all"),
@@ -44,7 +44,7 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const VEHICLE_TYPES = ["Compact", "Sedan", "SUV", "Truck", "Motorcycle"];
+const VEHICLE_TYPES = ["Two-Wheeler", "Hatchback", "Sedan", "SUV/MUV", "Truck/Tempo"];
 const AMENITIES = ["Covered", "Security Camera", "EV Charging", "Gated", "24/7 Access", "Lighting"];
 
 export default function ListingForm() {
@@ -69,12 +69,12 @@ export default function ListingForm() {
       address: "",
       city: "",
       state: "",
-      hourlyRate: 5,
+      hourlyRate: 50,
       dailyRate: undefined,
       monthlyRate: undefined,
       pricingType: "all",
       totalSpots: 1,
-      vehicleTypes: ["Sedan", "SUV"],
+      vehicleTypes: ["Sedan", "SUV/MUV"],
       amenities: [],
     },
   });
@@ -252,7 +252,7 @@ export default function ListingForm() {
                   name="hourlyRate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Hourly Rate ($)</FormLabel>
+                      <FormLabel>Hourly Rate (₹)</FormLabel>
                       <FormControl>
                         <Input type="number" step="0.5" {...field} />
                       </FormControl>
@@ -265,7 +265,7 @@ export default function ListingForm() {
                   name="dailyRate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Daily Rate ($) - Optional</FormLabel>
+                      <FormLabel>Daily Rate (₹) - Optional</FormLabel>
                       <FormControl>
                         <Input type="number" step="1" {...field} value={field.value || ''} onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)} />
                       </FormControl>
@@ -278,7 +278,7 @@ export default function ListingForm() {
                   name="monthlyRate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Monthly Rate ($) - Optional</FormLabel>
+                      <FormLabel>Monthly Rate (₹) - Optional</FormLabel>
                       <FormControl>
                         <Input type="number" step="5" {...field} value={field.value || ''} onChange={e => field.onChange(e.target.value ? Number(e.target.value) : undefined)} />
                       </FormControl>

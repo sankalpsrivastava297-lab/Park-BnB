@@ -12,7 +12,7 @@ import {
   Tooltip, 
   ResponsiveContainer 
 } from "recharts";
-import { DollarSign, MapPin, CalendarCheck, Star, Plus } from "lucide-react";
+import { IndianRupee, MapPin, CalendarCheck, Star, Plus } from "lucide-react";
 
 export default function HostDashboard() {
   const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
@@ -45,8 +45,8 @@ export default function HostDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard 
           title="Total Earnings" 
-          value={`$${stats?.totalEarnings?.toFixed(2) || '0.00'}`} 
-          icon={<DollarSign className="w-5 h-5 text-green-600" />} 
+          value={`₹${stats?.totalEarnings?.toFixed(0) || '0'}`} 
+          icon={<IndianRupee className="w-5 h-5 text-green-600" />} 
           loading={statsLoading} 
         />
         <StatCard 
@@ -83,11 +83,11 @@ export default function HostDashboard() {
                   <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                     <XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} tickFormatter={(value) => `$${value}`} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} tickFormatter={(value) => `₹${value}`} />
                     <Tooltip 
                       cursor={{ fill: '#f9fafb' }}
                       contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                      formatter={(value: number) => [`$${value}`, 'Earnings']}
+                      formatter={(value: number) => [`₹${value}`, 'Earnings']}
                     />
                     <Bar dataKey="amount" fill="var(--color-primary)" radius={[4, 4, 0, 0]} maxBarSize={50} />
                   </BarChart>
@@ -115,7 +115,7 @@ export default function HostDashboard() {
                     <p className="text-sm font-medium text-gray-900 truncate">Downtown Spot #{i}</p>
                     <p className="text-xs text-gray-500 truncate">New booking for tomorrow</p>
                   </div>
-                  <div className="font-semibold text-sm">+$24.00</div>
+                  <div className="font-semibold text-sm">+₹480</div>
                 </div>
               ))}
             </div>

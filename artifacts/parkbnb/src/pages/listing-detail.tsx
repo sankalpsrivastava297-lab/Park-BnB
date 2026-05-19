@@ -233,7 +233,7 @@ export default function ListingDetail() {
         <div>
           <div className="sticky top-24 bg-white border border-gray-200 rounded-2xl shadow-xl p-6">
             <div className="flex items-baseline gap-2 mb-6">
-              <span className="text-2xl font-bold">${listing.hourlyRate}</span>
+              <span className="text-2xl font-bold">₹{listing.hourlyRate}</span>
               <span className="text-gray-500">/ hour</span>
             </div>
 
@@ -306,7 +306,7 @@ export default function ListingDetail() {
             <div className="mt-6 pt-6 border-t border-gray-200">
               <div className="flex justify-between font-bold text-lg">
                 <span>Total</span>
-                <span>${calculateTotal().toFixed(2)}</span>
+                <span>₹{calculateTotal().toFixed(0)}</span>
               </div>
             </div>
           </div>
