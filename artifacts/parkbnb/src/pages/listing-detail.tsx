@@ -4,7 +4,6 @@ import { format, addHours, differenceInHours, differenceInDays } from "date-fns"
 import { 
   useGetListing, 
   useGetListingReviews, 
-  useCreateBooking, 
   getGetListingQueryKey,
   getGetListingReviewsQueryKey
 } from "@workspace/api-client-react";
@@ -15,7 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Star, Car, Shield, Clock, CalendarDays, CheckCircle } from "lucide-react";
+import { MapPin, Star, Car, Shield, CheckCircle } from "lucide-react";
+import { PaymentModal } from "@/components/payment-modal";
 
 export default function ListingDetail() {
   const params = useParams();
@@ -27,6 +27,7 @@ export default function ListingDetail() {
   const [startDate, setStartDate] = useState(format(new Date(), "yyyy-MM-dd'T'HH:00"));
   const [endDate, setEndDate] = useState(format(addHours(new Date(), 2), "yyyy-MM-dd'T'HH:00"));
   const [pricingType, setPricingType] = useState("hourly");
+  const [paymentOpen, setPaymentOpen] = useState(false);
 
   const { data: listing, isLoading } = useGetListing(id, {
     query: { enabled: !!id, queryKey: getGetListingQueryKey(id) }
@@ -35,8 +36,6 @@ export default function ListingDetail() {
   const { data: reviews } = useGetListingReviews(id, {
     query: { enabled: !!id, queryKey: getGetListingReviewsQueryKey(id) }
   });
-
-  const createBooking = useCreateBooking();
 
   const calculateTotal = () => {
     if (!listing) return 0;
@@ -64,33 +63,7 @@ export default function ListingDetail() {
       setLocation("/auth");
       return;
     }
-
-    createBooking.mutate({
-      data: {
-        listingId: id,
-        startDate: new Date(startDate).toISOString(),
-        endDate: new Date(endDate).toISOString(),
-        pricingType,
-        totalPrice: calculateTotal(),
-        vehicleType: user.vehicleType || "Compact",
-        vehiclePlate: user.vehiclePlate || ""
-      }
-    }, {
-      onSuccess: () => {
-        toast({
-          title: "Booking confirmed!",
-          description: "Your parking space has been booked successfully.",
-        });
-        setLocation("/bookings");
-      },
-      onError: () => {
-        toast({
-          variant: "destructive",
-          title: "Booking failed",
-          description: "There was an error processing your booking. Please try again.",
-        });
-      }
-    });
+    setPaymentOpen(true);
   };
 
   if (isLoading) {
@@ -297,11 +270,12 @@ export default function ListingDetail() {
             <Button 
               className="w-full py-6 text-lg font-bold rounded-xl"
               onClick={handleBook}
-              disabled={createBooking.isPending}
             >
-              {createBooking.isPending ? "Reserving..." : "Reserve"}
+              Reserve &amp; Pay
             </Button>
-            <p className="text-center text-xs text-gray-500 mt-4">You won't be charged yet</p>
+            <p className="text-center text-xs text-gray-500 mt-4 flex items-center justify-center gap-1">
+              <Shield className="h-3 w-3" /> Secure payment · UPI / Card / Net Banking
+            </p>
 
             <div className="mt-6 pt-6 border-t border-gray-200">
               <div className="flex justify-between font-bold text-lg">
@@ -312,6 +286,22 @@ export default function ListingDetail() {
           </div>
         </div>
       </div>
+
+      {listing && (
+        <PaymentModal
+          open={paymentOpen}
+          onClose={() => setPaymentOpen(false)}
+          amount={calculateTotal()}
+          listingId={id}
+          listingTitle={listing.title}
+          startDate={startDate}
+          endDate={endDate}
+          pricingType={pricingType}
+          vehicleType={user?.vehicleType || "Sedan"}
+          vehiclePlate={user?.vehiclePlate || ""}
+          onSuccess={() => setLocation("/bookings")}
+        />
+      )}
     </div>
   );
 }
