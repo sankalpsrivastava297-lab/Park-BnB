@@ -190,7 +190,7 @@ export default function Home() {
       {/* Host CTA */}
       <section className="py-16 px-4 md:px-8 max-w-7xl mx-auto w-full">
         <div className="bg-gray-900 rounded-3xl overflow-hidden relative shadow-2xl">
-          <div className="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center mix-blend-overlay"></div>
+          <div className="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1609587312208-cea54be969e7?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center mix-blend-overlay"></div>
           <div className="relative z-10 px-8 py-16 md:py-24 md:px-16 flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="max-w-xl">
               <div className="text-primary font-semibold mb-3 text-sm uppercase tracking-wide">For Property Owners</div>

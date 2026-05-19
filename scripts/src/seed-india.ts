@@ -1,6 +1,27 @@
 import { db, usersTable, listingsTable, bookingsTable, reviewsTable } from "@workspace/db";
 import { sql } from "drizzle-orm";
 
+// Indian parking photos — covered garages, multilevel lots, urban spots (no US landmarks)
+const PHOTOS = {
+  covered: [
+    "https://images.unsplash.com/photo-1609587312208-cea54be969e7?w=800&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80&auto=format&fit=crop",
+  ],
+  basement: [
+    "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=800&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1486006920555-c77dcf18193c?w=800&q=80&auto=format&fit=crop",
+  ],
+  open: [
+    "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=800&q=80&auto=format&fit=crop",
+  ],
+  multilevel: [
+    "https://images.unsplash.com/photo-1609587312208-cea54be969e7?w=800&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=800&q=80&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80&auto=format&fit=crop",
+  ],
+};
+
 async function seed() {
   console.log("Clearing existing data...");
   await db.execute(sql`TRUNCATE reviews, bookings, favorites, listings, users RESTART IDENTITY CASCADE`);
@@ -76,10 +97,7 @@ async function seed() {
       availableSpots: 2,
       vehicleTypes: JSON.stringify(["Sedan", "SUV/MUV", "Hatchback"]),
       amenities: JSON.stringify(["Covered", "Security Camera", "Gated", "24/7 Access", "Lighting"]),
-      photos: JSON.stringify([
-        "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=800&q=80",
-        "https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=800&q=80",
-      ]),
+      photos: JSON.stringify(PHOTOS.covered),
       isActive: true,
       rating: "4.8",
       reviewCount: 24,
@@ -102,10 +120,7 @@ async function seed() {
       availableSpots: 1,
       vehicleTypes: JSON.stringify(["Two-Wheeler", "Hatchback", "Sedan"]),
       amenities: JSON.stringify(["Covered", "Security Camera", "EV Charging", "Gated"]),
-      photos: JSON.stringify([
-        "https://images.unsplash.com/photo-1486006920555-c77dcf18193c?w=800&q=80",
-        "https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?w=800&q=80",
-      ]),
+      photos: JSON.stringify(PHOTOS.basement),
       isActive: true,
       rating: "4.6",
       reviewCount: 18,
@@ -129,10 +144,7 @@ async function seed() {
       availableSpots: 1,
       vehicleTypes: JSON.stringify(["Sedan", "SUV/MUV", "Hatchback"]),
       amenities: JSON.stringify(["Covered", "Security Camera", "Lighting", "24/7 Access"]),
-      photos: JSON.stringify([
-        "https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=800&q=80",
-        "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=800&q=80",
-      ]),
+      photos: JSON.stringify(PHOTOS.covered),
       isActive: true,
       rating: "4.7",
       reviewCount: 31,
@@ -155,9 +167,7 @@ async function seed() {
       availableSpots: 7,
       vehicleTypes: JSON.stringify(["Two-Wheeler", "Hatchback", "Sedan", "SUV/MUV", "Truck/Tempo"]),
       amenities: JSON.stringify(["Security Camera", "Lighting"]),
-      photos: JSON.stringify([
-        "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&q=80",
-      ]),
+      photos: JSON.stringify(PHOTOS.open),
       isActive: true,
       rating: "4.3",
       reviewCount: 12,
@@ -181,10 +191,7 @@ async function seed() {
       availableSpots: 2,
       vehicleTypes: JSON.stringify(["Two-Wheeler", "Sedan", "Hatchback", "SUV/MUV"]),
       amenities: JSON.stringify(["Covered", "Security Camera", "EV Charging", "24/7 Access"]),
-      photos: JSON.stringify([
-        "https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=800&q=80",
-        "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=800&q=80",
-      ]),
+      photos: JSON.stringify(PHOTOS.multilevel),
       isActive: true,
       rating: "4.9",
       reviewCount: 42,
@@ -207,9 +214,7 @@ async function seed() {
       availableSpots: 3,
       vehicleTypes: JSON.stringify(["Two-Wheeler", "Hatchback", "Sedan"]),
       amenities: JSON.stringify(["Gated", "Security Camera", "Lighting"]),
-      photos: JSON.stringify([
-        "https://images.unsplash.com/photo-1486006920555-c77dcf18193c?w=800&q=80",
-      ]),
+      photos: JSON.stringify(PHOTOS.basement),
       isActive: true,
       rating: "4.5",
       reviewCount: 19,
@@ -233,9 +238,7 @@ async function seed() {
       availableSpots: 1,
       vehicleTypes: JSON.stringify(["Hatchback", "Sedan", "SUV/MUV"]),
       amenities: JSON.stringify(["Covered", "Security Camera", "Gated"]),
-      photos: JSON.stringify([
-        "https://images.unsplash.com/photo-1573348722427-f1d6819fdf98?w=800&q=80",
-      ]),
+      photos: JSON.stringify(PHOTOS.covered),
       isActive: true,
       rating: "4.7",
       reviewCount: 9,
@@ -259,10 +262,7 @@ async function seed() {
       availableSpots: 12,
       vehicleTypes: JSON.stringify(["Two-Wheeler", "Hatchback", "Sedan", "SUV/MUV"]),
       amenities: JSON.stringify(["Covered", "Security Camera", "Gated", "24/7 Access", "Lighting", "EV Charging"]),
-      photos: JSON.stringify([
-        "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&q=80",
-        "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=800&q=80",
-      ]),
+      photos: JSON.stringify(PHOTOS.multilevel),
       isActive: true,
       rating: "4.6",
       reviewCount: 56,

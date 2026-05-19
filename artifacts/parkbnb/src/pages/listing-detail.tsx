@@ -119,7 +119,7 @@ export default function ListingDetail() {
 
   const photos = listing.photos && listing.photos.length > 0 
     ? listing.photos 
-    : ["/images/parking-1.png", "/images/parking-2.png", "/images/parking-3.png"];
+    : ["/images/parking-1.png", "/images/parking-2.png", "/images/parking-3.png", "/images/parking-4.png"];
 
   return (
     <div className="max-w-6xl mx-auto p-4 py-8 md:py-12">
