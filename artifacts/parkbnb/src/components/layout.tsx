@@ -165,13 +165,13 @@ export function AppLayout({ children }: { children: ReactNode }) {
         )}
 
         {/* Top Header */}
-        <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
+        <header className="sticky top-0 z-50 w-full border-b border-gray-100/80 bg-white/90 backdrop-blur-xl shadow-sm">
           <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-8">
-            <Link href={mode === "host" ? "/host/dashboard" : "/"} className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white font-bold text-xl">
+            <Link href={mode === "host" ? "/host/dashboard" : "/"} className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500 text-white font-black text-lg shadow-md shadow-emerald-500/30">
                 P
               </div>
-              <span className="hidden text-xl font-bold text-gray-900 md:block">ParkBnB</span>
+              <span className="hidden text-xl font-extrabold text-gray-900 md:block tracking-tight">ParkBnB</span>
             </Link>
 
             {/* Desktop Search Bar — only in driver mode */}
