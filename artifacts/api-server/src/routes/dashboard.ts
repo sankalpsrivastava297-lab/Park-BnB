@@ -98,8 +98,9 @@ router.get("/dashboard/earnings", async (req, res): Promise<void> => {
     });
   }
 
+  const fmt = sql.raw(`'${groupFormat}'`);
   const earningsData = await db.select({
-    period: sql<string>`to_char(created_at, ${groupFormat})`,
+    period: sql<string>`to_char(created_at, ${fmt})`,
     amount: sum(bookingsTable.totalPrice),
     bookings: count(),
   }).from(bookingsTable)
@@ -107,8 +108,8 @@ router.get("/dashboard/earnings", async (req, res): Promise<void> => {
       eq(bookingsTable.hostId, userId),
       sql`status NOT IN ('cancelled')`
     ))
-    .groupBy(sql`to_char(created_at, ${groupFormat})`)
-    .orderBy(sql`to_char(created_at, ${groupFormat})`);
+    .groupBy(sql`to_char(created_at, ${fmt})`)
+    .orderBy(sql`to_char(created_at, ${fmt})`);
 
   const earningsMap = new Map(earningsData.map(e => [e.period, e]));
   const totalAmount = earningsData.reduce((sum, e) => sum + parseFloat(e.amount ?? "0"), 0);
