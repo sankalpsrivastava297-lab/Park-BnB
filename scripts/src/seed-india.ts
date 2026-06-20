@@ -1,25 +1,15 @@
 import { db, usersTable, listingsTable, bookingsTable, reviewsTable } from "@workspace/db";
 import { sql } from "drizzle-orm";
 
-// Indian parking photos — covered garages, multilevel lots, urban spots (no US landmarks)
+// Confirmed parking garage photo (verified from live screenshots):
+// 1590674899484 = underground parking with yellow markings, ceiling lights ✅
+const P = "https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=800&q=80&auto=format&fit=crop";
+
 const PHOTOS = {
-  covered: [
-    "https://images.unsplash.com/photo-1609587312208-cea54be969e7?w=800&q=80&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80&auto=format&fit=crop",
-  ],
-  basement: [
-    "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=800&q=80&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1486006920555-c77dcf18193c?w=800&q=80&auto=format&fit=crop",
-  ],
-  open: [
-    "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800&q=80&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=800&q=80&auto=format&fit=crop",
-  ],
-  multilevel: [
-    "https://images.unsplash.com/photo-1609587312208-cea54be969e7?w=800&q=80&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?w=800&q=80&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80&auto=format&fit=crop",
-  ],
+  covered:    [P],
+  basement:   [P],
+  open:       [P],
+  multilevel: [P],
 };
 
 async function seed() {
