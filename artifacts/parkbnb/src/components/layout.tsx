@@ -197,10 +197,13 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 <Link href="/host/dashboard" className={cn("text-sm font-medium transition-colors", location === "/host/dashboard" ? "text-primary" : "text-gray-600 hover:text-gray-900")}>
                   Dashboard
                 </Link>
-                <Link href="/host/listings" className={cn("text-sm font-medium transition-colors", location === "/host/listings" ? "text-primary" : "text-gray-600 hover:text-gray-900")}>
+                <Link href="/host/listings" className={cn("text-sm font-medium transition-colors", location.startsWith("/host/listings") ? "text-primary" : "text-gray-600 hover:text-gray-900")}>
                   My Listings
                 </Link>
-                <Link href="/host/listings/new" className={cn("text-sm font-medium transition-colors", location === "/host/listings/new" ? "text-primary" : "text-gray-600 hover:text-gray-900")}>
+                <Link href="/host/bookings" className={cn("text-sm font-medium transition-colors", location === "/host/bookings" ? "text-primary" : "text-gray-600 hover:text-gray-900")}>
+                  Bookings
+                </Link>
+                <Link href="/host/listings/new" className={cn("text-sm font-medium transition-colors text-emerald-600 hover:text-emerald-700 font-semibold")}>
                   + Add Spot
                 </Link>
               </div>

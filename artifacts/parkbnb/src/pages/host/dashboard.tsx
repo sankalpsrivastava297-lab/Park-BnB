@@ -6,7 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from "recharts";
 import {
-  IndianRupee, MapPin, CalendarCheck, Star, Plus, TrendingUp, ArrowUpRight, Car
+  IndianRupee, MapPin, CalendarCheck, Star, Plus, TrendingUp, ArrowUpRight, Car, ArrowRight
 } from "lucide-react";
 
 export default function HostDashboard() {
@@ -188,7 +188,12 @@ export default function HostDashboard() {
 
             {/* Recent activity */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-              <h2 className="text-sm font-extrabold text-gray-900 mb-4">Recent Bookings</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-extrabold text-gray-900">Recent Bookings</h2>
+                <Link href="/host/bookings" className="text-xs text-emerald-600 hover:text-emerald-700 font-semibold flex items-center gap-0.5">
+                  View all <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
               <div className="space-y-3">
                 {[
                   { name: "Rahul S.", spot: "BKC Spot", amount: "₹480", time: "2h ago" },

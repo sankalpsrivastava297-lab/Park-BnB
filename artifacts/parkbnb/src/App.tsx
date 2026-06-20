@@ -15,6 +15,7 @@ import ListingDetail from "@/pages/listing-detail";
 import Bookings from "@/pages/bookings";
 import HostDashboard from "@/pages/host/dashboard";
 import HostListings from "@/pages/host/listings";
+import HostBookings from "@/pages/host/bookings";
 import ListingForm from "@/pages/host/listing-form";
 
 const queryClient = new QueryClient({
@@ -38,6 +39,7 @@ function Router() {
         <Route path="/bookings" component={Bookings} />
         <Route path="/host/dashboard" component={HostDashboard} />
         <Route path="/host/listings" component={HostListings} />
+        <Route path="/host/bookings" component={HostBookings} />
         <Route path="/host/listings/new" component={ListingForm} />
         <Route path="/host/listings/:id/edit" component={ListingForm} />
         <Route component={NotFound} />
