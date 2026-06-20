@@ -54,11 +54,11 @@ export default function AuthPage() {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex">
       {/* Left Panel — Brand */}
-      <div className="hidden lg:flex lg:w-[45%] flex-col justify-between bg-[#060d06] relative overflow-hidden p-12">
+      <div className="hidden lg:flex lg:w-[45%] flex-col justify-between bg-gradient-to-br from-emerald-600 to-emerald-800 relative overflow-hidden p-12">
         {/* Atmospheric orbs */}
-        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-emerald-500/15 blur-[100px]" />
-        <div className="absolute -bottom-40 right-0 w-[400px] h-[400px] rounded-full bg-emerald-400/8 blur-[120px]" />
-        <div className="absolute inset-0 opacity-[0.04]"
+        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-white/10 blur-[100px]" />
+        <div className="absolute -bottom-40 right-0 w-[400px] h-[400px] rounded-full bg-emerald-400/20 blur-[120px]" />
+        <div className="absolute inset-0 opacity-[0.06]"
           style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
 
         {/* Logo */}
