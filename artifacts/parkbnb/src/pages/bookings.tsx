@@ -13,12 +13,31 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Calendar, Clock, QrCode } from "lucide-react";
+import { MapPin, Calendar, QrCode, Star } from "lucide-react";
+import { QrPassModal } from "@/components/qr-pass-modal";
+import { ReviewModal } from "@/components/review-modal";
+
+type Booking = {
+  id: number;
+  listingId: number;
+  listingTitle: string;
+  listingAddress: string;
+  listingPhoto?: string | null;
+  startDate: string;
+  endDate: string;
+  status: string;
+  totalPrice: number;
+  vehicleType?: string;
+  vehiclePlate?: string;
+};
 
 export default function Bookings() {
   const [tab, setTab] = useState("upcoming");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const [qrBooking, setQrBooking] = useState<Booking | null>(null);
+  const [reviewBooking, setReviewBooking] = useState<Booking | null>(null);
 
   const { data: bookings, isLoading } = useGetMyBookings({ role: "driver" });
   const cancelBooking = useCancelBooking();
@@ -32,7 +51,7 @@ export default function Bookings() {
     });
   };
 
-  const filteredBookings = bookings?.filter(b => {
+  const filteredBookings = (bookings as Booking[] | undefined)?.filter(b => {
     if (tab === "upcoming") return b.status === "confirmed" || b.status === "pending" || b.status === "active";
     if (tab === "past") return b.status === "completed";
     if (tab === "cancelled") return b.status === "cancelled";
@@ -87,7 +106,12 @@ export default function Bookings() {
                       alt="Parking" 
                       className="w-full h-full object-cover"
                     />
-                    <Badge className="absolute top-2 left-2 bg-white/90 text-gray-900 hover:bg-white border-0 shadow-sm capitalize">
+                    <Badge className={`absolute top-2 left-2 border-0 shadow-sm capitalize ${
+                      booking.status === "confirmed" ? "bg-green-500 text-white hover:bg-green-500" :
+                      booking.status === "pending" ? "bg-amber-500 text-white hover:bg-amber-500" :
+                      booking.status === "completed" ? "bg-blue-500 text-white hover:bg-blue-500" :
+                      "bg-white/90 text-gray-900 hover:bg-white"
+                    }`}>
                       {booking.status}
                     </Badge>
                   </div>
@@ -96,9 +120,11 @@ export default function Bookings() {
                     <div>
                       <div className="flex justify-between items-start mb-2">
                         <Link href={`/listings/${booking.listingId}`}>
-                          <h3 className="text-lg font-semibold hover:text-primary hover:underline line-clamp-1">{booking.listingTitle}</h3>
+                          <h3 className="text-lg font-semibold hover:text-primary hover:underline line-clamp-1">
+                            {booking.listingTitle}
+                          </h3>
                         </Link>
-                        <span className="font-bold text-lg">₹{booking.totalPrice.toFixed(0)}</span>
+                        <span className="font-bold text-lg">₹{Number(booking.totalPrice).toFixed(0)}</span>
                       </div>
                       <p className="text-gray-500 text-sm flex items-center gap-1 mb-4">
                         <MapPin className="w-3.5 h-3.5" />
@@ -119,14 +145,21 @@ export default function Bookings() {
                     
                     <div className="mt-4 pt-4 border-t flex items-center justify-between">
                       <div className="text-sm font-medium text-gray-600">
-                        {booking.vehiclePlate} • {booking.vehicleType}
+                        {booking.vehiclePlate && <span>{booking.vehiclePlate}</span>}
+                        {booking.vehiclePlate && booking.vehicleType && <span> · </span>}
+                        {booking.vehicleType && <span>{booking.vehicleType}</span>}
                       </div>
                       
                       <div className="flex gap-2">
-                        {booking.status === "confirmed" && (
-                          <Button variant="outline" size="sm" className="gap-2">
+                        {(booking.status === "confirmed" || booking.status === "active") && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2 border-primary/30 text-primary hover:bg-primary/5"
+                            onClick={() => setQrBooking(booking)}
+                          >
                             <QrCode className="w-4 h-4" />
-                            Show QR
+                            Entry Pass
                           </Button>
                         )}
                         {(booking.status === "pending" || booking.status === "confirmed") && (
@@ -141,7 +174,15 @@ export default function Bookings() {
                           </Button>
                         )}
                         {booking.status === "completed" && (
-                          <Button variant="outline" size="sm">Leave Review</Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1.5 text-amber-600 hover:text-amber-700 hover:bg-amber-50 border-amber-200"
+                            onClick={() => setReviewBooking(booking)}
+                          >
+                            <Star className="w-4 h-4" />
+                            Rate & Review
+                          </Button>
                         )}
                       </div>
                     </div>
@@ -152,6 +193,26 @@ export default function Bookings() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* QR Entry Pass Modal */}
+      {qrBooking && (
+        <QrPassModal
+          open={!!qrBooking}
+          onClose={() => setQrBooking(null)}
+          booking={qrBooking}
+        />
+      )}
+
+      {/* Review Modal */}
+      {reviewBooking && (
+        <ReviewModal
+          open={!!reviewBooking}
+          onClose={() => setReviewBooking(null)}
+          listingId={reviewBooking.listingId}
+          listingTitle={reviewBooking.listingTitle}
+          bookingId={reviewBooking.id}
+        />
+      )}
     </div>
   );
 }

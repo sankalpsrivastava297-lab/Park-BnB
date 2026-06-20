@@ -162,6 +162,32 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Driver perks */}
+      <section className="py-14 px-4 md:px-8 bg-primary/5 border-y border-primary/10">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">India's smartest parking app</h2>
+            <p className="text-gray-600 mt-2">Everything a driver needs, nothing they don't.</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            {[
+              { icon: "🔍", title: "Search & Filter", desc: "By city, time, vehicle type, and price range" },
+              { icon: "📱", title: "UPI / Card Pay", desc: "Secure checkout with PhonePe, GPay, UPI ID, or card" },
+              { icon: "🎫", title: "QR Entry Pass", desc: "Digital pass sent instantly — show at the gate" },
+              { icon: "⭐", title: "Verified Reviews", desc: "Real ratings from real drivers, no fake reviews" },
+            ].map(({ icon, title, desc }) => (
+              <div key={title} className="bg-white rounded-2xl p-5 shadow-sm border border-white flex flex-col gap-3">
+                <span className="text-3xl">{icon}</span>
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm">{title}</p>
+                  <p className="text-xs text-gray-500 mt-1">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* How it works */}
       <section className="py-16 px-4 md:px-8 bg-gray-50">
         <div className="max-w-5xl mx-auto text-center mb-12">
