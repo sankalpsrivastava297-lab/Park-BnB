@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Search, SlidersHorizontal, X, MapPin } from "lucide-react";
+import { Search, SlidersHorizontal, X, MapPin, ArrowLeft } from "lucide-react";
 
 const VEHICLE_TYPES = ["Two-Wheeler", "Hatchback", "Sedan", "SUV/MUV", "Truck/Tempo"];
 
 export default function SearchPage() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [params, setParams] = useState({
     query: "",
     minPrice: 0,
@@ -161,8 +161,15 @@ export default function SearchPage() {
         </div>
 
         {/* Results header */}
-        <div className="bg-white border-b border-gray-100 px-4 md:px-6 py-3 flex items-center justify-between">
-          <div>
+        <div className="bg-white border-b border-gray-100 px-4 md:px-6 py-3 flex items-center gap-3">
+          <button
+            onClick={() => setLocation("/")}
+            className="flex items-center gap-1.5 text-gray-500 hover:text-gray-900 transition-colors shrink-0 mr-1"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm font-medium hidden sm:block">Back</span>
+          </button>
+          <div className="flex-1">
             {isLoading ? (
               <div className="h-4 w-32 bg-gray-100 rounded animate-pulse" />
             ) : (
@@ -173,7 +180,7 @@ export default function SearchPage() {
             )}
           </div>
           {hasFilters && (
-            <button onClick={clearAll} className="text-xs font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
+            <button onClick={clearAll} className="text-xs font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1 shrink-0">
               <X className="w-3 h-3" /> Clear filters
             </button>
           )}

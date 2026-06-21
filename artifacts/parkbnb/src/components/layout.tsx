@@ -1,8 +1,13 @@
-import { ReactNode, useState, useEffect, createContext, useContext } from "react";
+import { ReactNode, useState, useEffect, useRef, createContext, useContext } from "react";
 import { Link, useLocation } from "wouter";
+import { format } from "date-fns";
 import { useAuth } from "@/lib/auth";
-import { Search, Calendar, Menu, User, Home, LogOut, Bell, X, Car, CheckCircle, XCircle, ChevronRight, Building2, ArrowLeftRight } from "lucide-react";
+import {
+  Search, Calendar, Menu, User, Home, LogOut, Bell, X, Car,
+  CheckCircle, XCircle, ChevronRight, Building2, ArrowLeftRight, MapPin, ChevronDown,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -115,6 +120,192 @@ function ModePill({ mode, onSwitch }: { mode: Mode; onSwitch: () => void }) {
   );
 }
 
+// ── Interactive search bar ──────────────────────────────────────
+const VEHICLE_TYPES = ["Any vehicle", "Two-Wheeler", "Hatchback", "Sedan", "SUV/MUV", "Truck/Tempo"];
+
+type ActivePanel = null | "location" | "dates" | "vehicle";
+
+function NavSearchBar({ onSearch }: { onSearch: (q: string, vehicle: string, startDate: string, endDate: string) => void }) {
+  const [active, setActive] = useState<ActivePanel>(null);
+  const [locationQ, setLocationQ] = useState("");
+  const [vehicle, setVehicle] = useState("Any vehicle");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setActive(null);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleSearch = () => {
+    setActive(null);
+    onSearch(locationQ, vehicle === "Any vehicle" ? "" : vehicle, startDate, endDate);
+  };
+
+  const dateLabel = () => {
+    if (startDate && endDate) {
+      return `${format(new Date(startDate), "d MMM")} – ${format(new Date(endDate), "d MMM")}`;
+    }
+    if (startDate) return format(new Date(startDate), "d MMM");
+    return "Any week";
+  };
+
+  return (
+    <div ref={ref} className="relative hidden md:flex flex-1 max-w-lg mx-8">
+      <div className={cn(
+        "w-full flex items-center rounded-full border bg-white shadow-sm transition-all overflow-hidden",
+        active ? "shadow-md ring-2 ring-gray-200" : "hover:shadow-md cursor-pointer"
+      )}>
+        {/* Location */}
+        <button
+          onClick={() => setActive(active === "location" ? null : "location")}
+          className={cn(
+            "flex flex-col items-start px-5 py-2.5 flex-1 min-w-0 border-r border-gray-200 transition-colors",
+            active === "location" ? "bg-white" : "hover:bg-gray-50"
+          )}
+        >
+          <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Where</span>
+          <span className={cn("text-sm font-medium truncate", locationQ ? "text-gray-900" : "text-gray-500")}>
+            {locationQ || "Anywhere"}
+          </span>
+        </button>
+
+        {/* Dates */}
+        <button
+          onClick={() => setActive(active === "dates" ? null : "dates")}
+          className={cn(
+            "flex flex-col items-start px-5 py-2.5 flex-1 min-w-0 border-r border-gray-200 transition-colors",
+            active === "dates" ? "bg-white" : "hover:bg-gray-50"
+          )}
+        >
+          <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">When</span>
+          <span className={cn("text-sm font-medium truncate", (startDate || endDate) ? "text-gray-900" : "text-gray-500")}>
+            {dateLabel()}
+          </span>
+        </button>
+
+        {/* Vehicle */}
+        <button
+          onClick={() => setActive(active === "vehicle" ? null : "vehicle")}
+          className={cn(
+            "flex flex-col items-start px-4 py-2.5 flex-1 min-w-0 transition-colors",
+            active === "vehicle" ? "bg-white" : "hover:bg-gray-50"
+          )}
+        >
+          <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Vehicle</span>
+          <span className={cn("text-sm font-medium truncate", vehicle !== "Any vehicle" ? "text-gray-900" : "text-gray-500")}>
+            {vehicle}
+          </span>
+        </button>
+
+        {/* Search button */}
+        <button
+          onClick={handleSearch}
+          className="mx-2 rounded-full bg-emerald-500 hover:bg-emerald-600 p-2.5 text-white transition-colors shrink-0"
+        >
+          <Search className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* Location dropdown */}
+      {active === "location" && (
+        <div className="absolute top-full mt-2 left-0 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 z-50">
+          <p className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">Search by city</p>
+          <div className="relative mb-3">
+            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              autoFocus
+              placeholder="Mumbai, Delhi, Bangalore…"
+              value={locationQ}
+              onChange={e => setLocationQ(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleSearch()}
+              className="pl-9 rounded-xl"
+            />
+          </div>
+          <div className="space-y-1">
+            {["Mumbai", "Delhi", "Bangalore", "Pune", "Hyderabad", "Chennai"].map(city => (
+              <button
+                key={city}
+                onClick={() => { setLocationQ(city); setActive(null); }}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors text-left"
+              >
+                <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" /> {city}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Date dropdown */}
+      {active === "dates" && (
+        <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 p-5 z-50">
+          <p className="text-xs font-black text-gray-500 uppercase tracking-widest mb-4">Select dates & times</p>
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-bold text-gray-600 mb-1.5 block">Arrival</label>
+              <input
+                type="datetime-local"
+                value={startDate}
+                onChange={e => setStartDate(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-gray-600 mb-1.5 block">Departure</label>
+              <input
+                type="datetime-local"
+                value={endDate}
+                onChange={e => setEndDate(e.target.value)}
+                min={startDate}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
+              />
+            </div>
+            {(startDate || endDate) && (
+              <button
+                onClick={() => { setStartDate(""); setEndDate(""); }}
+                className="text-xs text-gray-400 hover:text-gray-600 underline"
+              >
+                Clear dates
+              </button>
+            )}
+          </div>
+          <Button
+            className="w-full mt-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white"
+            onClick={() => setActive(null)}
+          >
+            Done
+          </Button>
+        </div>
+      )}
+
+      {/* Vehicle dropdown */}
+      {active === "vehicle" && (
+        <div className="absolute top-full mt-2 right-0 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 p-3 z-50">
+          <p className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3 px-2">Vehicle type</p>
+          {VEHICLE_TYPES.map(v => (
+            <button
+              key={v}
+              onClick={() => { setVehicle(v); setActive(null); }}
+              className={cn(
+                "w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
+                vehicle === v ? "bg-emerald-50 text-emerald-700" : "text-gray-700 hover:bg-gray-50"
+              )}
+            >
+              {v}
+              {vehicle === v && <CheckCircle className="w-4 h-4 text-emerald-500" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main layout ─────────────────────────────────────────────────
 export function AppLayout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
@@ -128,7 +319,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const setMode = (m: Mode) => {
     setModeState(m);
     try { localStorage.setItem("parkbnb_mode", m); } catch {}
-    // Navigate to the right home for the new mode
     if (m === "host") setLocation("/host/dashboard");
     else setLocation("/");
   };
@@ -139,6 +329,16 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const { notifications, unreadCount, markRead, markAllRead, clearAll } = useNotifications(userId);
 
   const isLoggedIn = !!user;
+
+  const handleNavSearch = (q: string, vehicle: string, startDate: string, endDate: string) => {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (vehicle) params.set("vehicle", vehicle);
+    if (startDate) params.set("start", startDate);
+    if (endDate) params.set("end", endDate);
+    const qs = params.toString();
+    setLocation(`/search${qs ? `?${qs}` : ""}`);
+  };
 
   return (
     <ModeContext.Provider value={{ mode, setMode }}>
@@ -167,7 +367,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         {/* Top Header */}
         <header className="sticky top-0 z-50 w-full border-b border-gray-100/80 bg-white/90 backdrop-blur-xl shadow-sm">
           <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-8">
-            <Link href={mode === "host" ? "/host/dashboard" : "/"} className="flex items-center gap-2.5">
+            <Link href={mode === "host" ? "/host/dashboard" : "/"} className="flex items-center gap-2.5 shrink-0">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500 text-white font-black text-lg shadow-md shadow-emerald-500/30">
                 P
               </div>
@@ -176,19 +376,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
             {/* Desktop Search Bar — only in driver mode */}
             {mode === "driver" && (
-              <div
-                onClick={() => setLocation("/search")}
-                className="hidden md:flex flex-1 max-w-md mx-8 items-center rounded-full border bg-white px-4 py-2 shadow-sm transition-shadow hover:shadow-md cursor-pointer"
-              >
-                <div className="flex-1 text-sm font-medium text-gray-900">Anywhere</div>
-                <div className="h-4 w-[1px] bg-gray-300 mx-3" />
-                <div className="flex-1 text-sm font-medium text-gray-900">Any week</div>
-                <div className="h-4 w-[1px] bg-gray-300 mx-3" />
-                <div className="flex-1 text-sm text-gray-500">Add vehicle</div>
-                <div className="ml-3 rounded-full bg-primary p-2 text-white">
-                  <Search className="h-4 w-4" />
-                </div>
-              </div>
+              <NavSearchBar onSearch={handleNavSearch} />
             )}
 
             {/* Host mode header links */}
@@ -203,13 +391,13 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 <Link href="/host/bookings" className={cn("text-sm font-medium transition-colors", location === "/host/bookings" ? "text-primary" : "text-gray-600 hover:text-gray-900")}>
                   Bookings
                 </Link>
-                <Link href="/host/listings/new" className={cn("text-sm font-medium transition-colors text-emerald-600 hover:text-emerald-700 font-semibold")}>
+                <Link href="/host/listings/new" className={cn("text-sm font-medium text-emerald-600 hover:text-emerald-700 font-semibold transition-colors")}>
                   + Add Spot
                 </Link>
               </div>
             )}
 
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 shrink-0">
               {/* Mode pill — desktop */}
               {isLoggedIn && <ModePill mode={mode} onSwitch={toggleMode} />}
 
@@ -273,13 +461,11 @@ export function AppLayout({ children }: { children: ReactNode }) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-64 rounded-2xl p-2 shadow-xl">
-                    {/* User info */}
                     <div className="px-2 py-2 mb-1">
                       <p className="font-semibold text-gray-900">{user.name}</p>
                       <p className="text-xs text-gray-500">{user.email}</p>
                     </div>
 
-                    {/* Mode switcher — prominent card inside dropdown */}
                     <div className={cn(
                       "mx-0 mb-2 rounded-xl p-3 flex items-center justify-between",
                       mode === "driver" ? "bg-blue-50" : "bg-amber-50"
@@ -319,7 +505,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
 
                     <DropdownMenuSeparator />
 
-                    {/* Driver links */}
                     {mode === "driver" && (
                       <>
                         <Link href="/bookings">
@@ -335,7 +520,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
                       </>
                     )}
 
-                    {/* Host links */}
                     {mode === "host" && (
                       <>
                         <Link href="/host/dashboard">
