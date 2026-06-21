@@ -17,6 +17,7 @@ import HostDashboard from "@/pages/host/dashboard";
 import HostListings from "@/pages/host/listings";
 import HostBookings from "@/pages/host/bookings";
 import ListingForm from "@/pages/host/listing-form";
+import BookingConfirmed from "@/pages/booking-confirmed";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,6 +43,7 @@ function Router() {
         <Route path="/host/bookings" component={HostBookings} />
         <Route path="/host/listings/new" component={ListingForm} />
         <Route path="/host/listings/:id/edit" component={ListingForm} />
+        <Route path="/bookings/confirmed" component={BookingConfirmed} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>

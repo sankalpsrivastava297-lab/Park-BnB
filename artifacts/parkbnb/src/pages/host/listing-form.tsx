@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -17,7 +17,6 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -25,7 +24,8 @@ import {
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, ArrowLeft } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Sparkles, ArrowLeft, Plus, X, ImageIcon } from "lucide-react";
 
 const formSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
@@ -40,6 +40,7 @@ const formSchema = z.object({
   totalSpots: z.coerce.number().min(1, "Must have at least 1 spot"),
   vehicleTypes: z.array(z.string()).min(1, "Select at least one vehicle type"),
   amenities: z.array(z.string()),
+  photos: z.array(z.string()).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -47,12 +48,20 @@ type FormValues = z.infer<typeof formSchema>;
 const VEHICLE_TYPES = ["Two-Wheeler", "Hatchback", "Sedan", "SUV/MUV", "Truck/Tempo"];
 const AMENITIES = ["Covered", "Security Camera", "EV Charging", "Gated", "24/7 Access", "Lighting"];
 
+const SAMPLE_PHOTOS = [
+  "https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=800&q=80",
+  "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+  "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&q=80",
+];
+
 export default function ListingForm() {
   const params = useParams();
   const isEditing = !!params.id;
   const id = isEditing ? Number(params.id) : undefined;
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [photoUrls, setPhotoUrls] = useState<string[]>([""]);
+  const [photoError, setPhotoError] = useState("");
 
   const { data: listing, isLoading: isLoadingListing } = useGetListing(id as number, {
     query: { enabled: isEditing, queryKey: getGetListingQueryKey(id as number) }
@@ -94,7 +103,11 @@ export default function ListingForm() {
         totalSpots: listing.totalSpots,
         vehicleTypes: listing.vehicleTypes || [],
         amenities: listing.amenities || [],
+        photos: listing.photos || [],
       });
+      if (listing.photos && listing.photos.length > 0) {
+        setPhotoUrls(listing.photos);
+      }
     }
   }, [listing, isEditing, form]);
 
@@ -104,21 +117,33 @@ export default function ListingForm() {
   });
 
   const onSubmit = (data: FormValues) => {
+    const validPhotos = photoUrls.filter(u => u.trim().length > 0);
+    const payload = { ...data, photos: validPhotos.length > 0 ? validPhotos : undefined };
     if (isEditing && id) {
-      updateListing.mutate({ id, data }, {
+      updateListing.mutate({ id, data: payload }, {
         onSuccess: () => {
           toast({ title: "Listing updated successfully" });
           setLocation("/host/listings");
         }
       });
     } else {
-      createListing.mutate({ data }, {
+      createListing.mutate({ data: payload }, {
         onSuccess: () => {
-          toast({ title: "Listing created successfully" });
+          toast({ title: "Listing created! Your space is now live." });
           setLocation("/host/listings");
         }
       });
     }
+  };
+
+  const addPhotoUrl = () => {
+    if (photoUrls.length < 5) setPhotoUrls(prev => [...prev, ""]);
+  };
+  const removePhotoUrl = (i: number) => {
+    setPhotoUrls(prev => prev.filter((_, idx) => idx !== i));
+  };
+  const updatePhotoUrl = (i: number, val: string) => {
+    setPhotoUrls(prev => prev.map((u, idx) => idx === i ? val : u));
   };
 
   const applySuggestedPrices = () => {
@@ -290,6 +315,71 @@ export default function ListingForm() {
             </CardContent>
           </Card>
 
+          {/* Photos */}
+          <Card className="shadow-sm border-gray-200">
+            <CardContent className="p-6 space-y-5">
+              <div className="border-b pb-4">
+                <h2 className="text-xl font-semibold">Photos</h2>
+                <p className="text-sm text-gray-400 mt-1">Add up to 5 photo URLs. Use Unsplash or any image hosting link.</p>
+              </div>
+
+              {/* Preview strip */}
+              {photoUrls.some(u => u.trim().length > 0) && (
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {photoUrls.filter(u => u.trim()).map((url, i) => (
+                    <div key={i} className="w-24 h-20 rounded-xl overflow-hidden border border-gray-100 shrink-0 bg-gray-50">
+                      <img
+                        src={url}
+                        alt={`Photo ${i + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={e => { (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=200&q=60"; }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="space-y-3">
+                {photoUrls.map((url, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                      <ImageIcon className="w-4 h-4 text-gray-400" />
+                    </div>
+                    <Input
+                      placeholder={`Photo ${i + 1} URL — https://...`}
+                      value={url}
+                      onChange={e => updatePhotoUrl(i, e.target.value)}
+                      className="flex-1 rounded-xl text-sm"
+                    />
+                    {photoUrls.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removePhotoUrl(i)}
+                        className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-red-50 hover:text-red-500 flex items-center justify-center transition-colors shrink-0"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {photoUrls.length < 5 && (
+                <button
+                  type="button"
+                  onClick={addPhotoUrl}
+                  className="flex items-center gap-2 text-sm font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
+                >
+                  <Plus className="w-4 h-4" /> Add another photo
+                </button>
+              )}
+
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700">
+                <strong>Tip:</strong> Use Unsplash links like <span className="font-mono">https://images.unsplash.com/photo-1590674899484-d5640e854abe?w=800</span> for free parking photos.
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Details */}
           <Card className="shadow-sm border-gray-200">
             <CardContent className="p-6 space-y-6">
@@ -310,7 +400,7 @@ export default function ListingForm() {
               />
 
               <div className="space-y-4">
-                <FormLabel className="text-base">Allowed Vehicle Types</FormLabel>
+                <Label className="text-base font-semibold text-gray-900">Allowed Vehicle Types</Label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {VEHICLE_TYPES.map((type) => (
                     <FormField
@@ -346,11 +436,13 @@ export default function ListingForm() {
                     />
                   ))}
                 </div>
-                <FormMessage>{form.formState.errors.vehicleTypes?.message}</FormMessage>
+                {form.formState.errors.vehicleTypes && (
+                  <p className="text-sm font-medium text-destructive">{form.formState.errors.vehicleTypes.message}</p>
+                )}
               </div>
 
               <div className="space-y-4">
-                <FormLabel className="text-base">Amenities</FormLabel>
+                <Label className="text-base font-semibold text-gray-900">Amenities</Label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {AMENITIES.map((amenity) => (
                     <FormField

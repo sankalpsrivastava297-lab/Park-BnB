@@ -15,6 +15,13 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   MapPin, Star, Car, Shield, CheckCircle, Camera, Lock, Clock,
   Zap, Droplets, Sun, ArrowLeft, Heart, Share2
 } from "lucide-react";
@@ -44,6 +51,8 @@ export default function ListingDetail() {
   const [endDate, setEndDate] = useState(format(addHours(new Date(), 2), "yyyy-MM-dd'T'HH:00"));
   const [pricingType, setPricingType] = useState("hourly");
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [selectedVehicleType, setSelectedVehicleType] = useState("");
+  const [vehiclePlate, setVehiclePlate] = useState("");
 
   const { data: listing, isLoading } = useGetListing(id, {
     query: { enabled: !!id, queryKey: getGetListingQueryKey(id) },
@@ -370,6 +379,35 @@ export default function ListingDetail() {
                   </div>
                 </div>
 
+                {/* Vehicle selector */}
+                <div className="border border-gray-200 rounded-2xl overflow-hidden divide-y divide-gray-100">
+                  <div className="p-4">
+                    <Label className="text-[10px] uppercase font-black text-gray-400 tracking-widest mb-1.5 block">Vehicle Type</Label>
+                    <Select
+                      value={selectedVehicleType || listing.vehicleTypes?.[0] || "Sedan"}
+                      onValueChange={setSelectedVehicleType}
+                    >
+                      <SelectTrigger className="border-0 p-0 h-auto shadow-none focus:ring-0 text-sm font-medium">
+                        <SelectValue placeholder="Select vehicle" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(listing.vehicleTypes?.length ? listing.vehicleTypes : ["Sedan"]).map(v => (
+                          <SelectItem key={v} value={v}>{v}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="p-4">
+                    <Label className="text-[10px] uppercase font-black text-gray-400 tracking-widest mb-1.5 block">Number Plate</Label>
+                    <Input
+                      placeholder="MH 01 AB 1234"
+                      value={vehiclePlate}
+                      onChange={e => setVehiclePlate(e.target.value.toUpperCase())}
+                      className="border-0 p-0 h-auto focus-visible:ring-0 shadow-none text-sm font-medium uppercase tracking-wider"
+                    />
+                  </div>
+                </div>
+
                 {/* Total */}
                 <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4">
                   <div className="flex items-center justify-between">
@@ -423,9 +461,9 @@ export default function ListingDetail() {
           startDate={startDate}
           endDate={endDate}
           pricingType={pricingType}
-          vehicleType={user?.vehicleType || "Sedan"}
-          vehiclePlate={user?.vehiclePlate || ""}
-          onSuccess={() => setLocation("/bookings")}
+          vehicleType={selectedVehicleType || listing.vehicleTypes?.[0] || user?.vehicleType || "Sedan"}
+          vehiclePlate={vehiclePlate || user?.vehiclePlate || ""}
+          onSuccess={(bookingId) => setLocation(`/bookings/confirmed?id=${bookingId}`)}
         />
       )}
     </div>

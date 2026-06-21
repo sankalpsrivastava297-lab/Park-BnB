@@ -36,7 +36,7 @@ interface PaymentModalProps {
   pricingType: string;
   vehicleType?: string;
   vehiclePlate?: string;
-  onSuccess: () => void;
+  onSuccess: (bookingId: number) => void;
 }
 
 type PayMethod = "upi" | "card" | "netbanking" | "wallet";
@@ -96,6 +96,7 @@ export function PaymentModal({
   const [selectedWallet, setSelectedWallet] = useState("");
   const [paymentId, setPaymentId] = useState("");
   const [transactionId, setTransactionId] = useState("");
+  const [createdBookingId, setCreatedBookingId] = useState<number | null>(null);
 
   const upiString = `upi://pay?pa=parkbnb@upi&pn=ParkBnB&am=${amount}&tn=Parking+Booking&cu=INR`;
 
@@ -134,6 +135,7 @@ export function PaymentModal({
       setTransactionId(verifyData.transactionId);
 
       // Create the booking
+      let newBookingId: number | null = null;
       await new Promise<void>((resolve, reject) => {
         createBooking.mutate({
           data: {
@@ -146,7 +148,7 @@ export function PaymentModal({
             vehiclePlate: vehiclePlate || "",
           }
         }, {
-          onSuccess: () => resolve(),
+          onSuccess: (data: any) => { newBookingId = data?.id ?? null; setCreatedBookingId(data?.id ?? null); resolve(); },
           onError: () => reject(new Error("Booking failed")),
         });
       });
@@ -245,7 +247,7 @@ export function PaymentModal({
                 <span className="font-medium text-gray-900 capitalize">{method === "upi" ? "UPI" : method === "netbanking" ? selectedBank : method === "wallet" ? selectedWallet : "Card"}</span>
               </div>
             </div>
-            <Button className="w-full rounded-xl" onClick={() => { onSuccess(); handleClose(); }}>
+            <Button className="w-full rounded-xl" onClick={() => { onSuccess(createdBookingId!); handleClose(); }}>
               View My Booking
             </Button>
           </div>
