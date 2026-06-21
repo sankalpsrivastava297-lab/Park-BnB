@@ -1,5 +1,5 @@
 import { useGetDashboardStats, useGetEarnings } from "@workspace/api-client-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 export default function HostDashboard() {
+  const [, setLocation] = useLocation();
   const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
   const { data: earnings, isLoading: earningsLoading } = useGetEarnings({ period: "week" });
 
@@ -223,7 +224,10 @@ export default function HostDashboard() {
             <h3 className="text-white font-extrabold text-lg">Add weekend pricing to earn 40% more</h3>
             <p className="text-white/70 text-sm mt-1">Spots with dynamic pricing get 3× more bookings.</p>
           </div>
-          <Button className="bg-white hover:bg-gray-50 text-emerald-700 font-bold rounded-full shrink-0 shadow-lg">
+          <Button
+            onClick={() => setLocation("/host/listings")}
+            className="bg-white hover:bg-gray-50 text-emerald-700 font-bold rounded-full shrink-0 shadow-lg"
+          >
             Update Pricing
           </Button>
         </div>
