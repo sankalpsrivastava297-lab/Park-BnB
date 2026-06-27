@@ -1,0 +1,26 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "QWsMyL3DpAUrYASutqIQE"
+uri = "file://artifacts/parkbnb/public/images/parking-1.png"
+type = "image"
+title = "indoor parking garage spot"
+
+[[generated]]
+id = "NpL2UIghFQZiGrCmX32tu"
+uri = "file://artifacts/parkbnb/public/images/parking-2.png"
+type = "image"
+title = "outdoor parking lot spot"
+
+[[generated]]
+id = "G_HnduNpNaHIyl_9bfK-F"
+uri = "file://artifacts/parkbnb/public/images/parking-3.png"
+type = "image"
+title = "covered street parking"
+
+[[generated]]
+id = "jV5xqo1bDIba5esAelJh3"
+uri = "file://artifacts/parkbnb/public/images/parking-4.png"
+type = "image"
+title = "residential driveway parking"
