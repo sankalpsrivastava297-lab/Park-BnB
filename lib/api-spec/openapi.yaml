@@ -1,0 +1,1082 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: ParkBnB API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: users
+    description: User profile operations
+  - name: listings
+    description: Parking spot listing operations
+  - name: bookings
+    description: Booking operations
+  - name: reviews
+    description: Review operations
+  - name: search
+    description: Search and discovery
+  - name: dashboard
+    description: Dashboard and analytics
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /users/me:
+    get:
+      operationId: getMe
+      tags: [users]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+    patch:
+      operationId: updateMe
+      tags: [users]
+      summary: Update current user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/register:
+    post:
+      operationId: registerUser
+      tags: [users]
+      summary: Register or login a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRegister"
+      responses:
+        "200":
+          description: User registered or logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /listings:
+    get:
+      operationId: getListings
+      tags: [listings]
+      summary: Get all listings
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer }
+        - name: limit
+          in: query
+          schema: { type: integer }
+        - name: city
+          in: query
+          schema: { type: string }
+        - name: vehicleType
+          in: query
+          schema: { type: string }
+        - name: amenities
+          in: query
+          schema: { type: string }
+        - name: minPrice
+          in: query
+          schema: { type: number }
+        - name: maxPrice
+          in: query
+          schema: { type: number }
+        - name: pricingType
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: List of parking listings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListingsResponse"
+    post:
+      operationId: createListing
+      tags: [listings]
+      summary: Create a new parking listing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListingInput"
+      responses:
+        "201":
+          description: Created listing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+
+  /listings/nearby:
+    get:
+      operationId: getNearbyListings
+      tags: [listings]
+      summary: Get nearby parking listings
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema: { type: number }
+        - name: lng
+          in: query
+          required: true
+          schema: { type: number }
+        - name: radius
+          in: query
+          schema: { type: number }
+      responses:
+        "200":
+          description: Nearby listings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Listing"
+
+  /listings/featured:
+    get:
+      operationId: getFeaturedListings
+      tags: [listings]
+      summary: Get featured/popular parking listings
+      responses:
+        "200":
+          description: Featured listings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Listing"
+
+  /listings/{id}:
+    get:
+      operationId: getListing
+      tags: [listings]
+      summary: Get a listing by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Listing details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListingDetail"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateListing
+      tags: [listings]
+      summary: Update a listing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ListingUpdate"
+      responses:
+        "200":
+          description: Updated listing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Listing"
+    delete:
+      operationId: deleteListing
+      tags: [listings]
+      summary: Delete a listing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+
+  /listings/{id}/availability:
+    post:
+      operationId: checkAvailability
+      tags: [listings]
+      summary: Check availability for a listing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AvailabilityQuery"
+      responses:
+        "200":
+          description: Availability slots
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AvailabilityResponse"
+
+  /listings/host/mine:
+    get:
+      operationId: getMyListings
+      tags: [listings]
+      summary: Get all listings for the current host
+      responses:
+        "200":
+          description: Host listings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Listing"
+
+  /bookings:
+    get:
+      operationId: getMyBookings
+      tags: [bookings]
+      summary: Get all bookings for the current user
+      parameters:
+        - name: role
+          in: query
+          schema: { type: string }
+          description: "driver or host"
+        - name: status
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: User bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: Create a new booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingInput"
+      responses:
+        "201":
+          description: Created booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  /bookings/{id}:
+    get:
+      operationId: getBooking
+      tags: [bookings]
+      summary: Get a booking by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Booking details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  /bookings/{id}/cancel:
+    post:
+      operationId: cancelBooking
+      tags: [bookings]
+      summary: Cancel a booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Cancelled booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  /bookings/{id}/confirm:
+    post:
+      operationId: confirmBooking
+      tags: [bookings]
+      summary: Confirm a booking (host action)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Confirmed booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  /reviews:
+    post:
+      operationId: createReview
+      tags: [reviews]
+      summary: Create a review for a listing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewInput"
+      responses:
+        "201":
+          description: Created review
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+
+  /reviews/listing/{listingId}:
+    get:
+      operationId: getListingReviews
+      tags: [reviews]
+      summary: Get reviews for a listing
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Listing reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+
+  /search:
+    get:
+      operationId: searchListings
+      tags: [search]
+      summary: Search parking listings
+      parameters:
+        - name: query
+          in: query
+          schema: { type: string }
+        - name: lat
+          in: query
+          schema: { type: number }
+        - name: lng
+          in: query
+          schema: { type: number }
+        - name: startDate
+          in: query
+          schema: { type: string }
+        - name: endDate
+          in: query
+          schema: { type: string }
+        - name: vehicleType
+          in: query
+          schema: { type: string }
+        - name: pricingType
+          in: query
+          schema: { type: string }
+        - name: minPrice
+          in: query
+          schema: { type: number }
+        - name: maxPrice
+          in: query
+          schema: { type: number }
+        - name: amenities
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListingsResponse"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get host dashboard statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/earnings:
+    get:
+      operationId: getEarnings
+      tags: [dashboard]
+      summary: Get host earnings breakdown
+      parameters:
+        - name: period
+          in: query
+          schema: { type: string }
+          description: "week, month, year"
+      responses:
+        "200":
+          description: Earnings data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EarningsResponse"
+
+  /favorites:
+    get:
+      operationId: getMyFavorites
+      tags: [users]
+      summary: Get user's favorite listings
+      responses:
+        "200":
+          description: Favorite listings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Listing"
+
+  /favorites/{listingId}:
+    post:
+      operationId: toggleFavorite
+      tags: [users]
+      summary: Toggle favorite status of a listing
+      parameters:
+        - name: listingId
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Favorite toggled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FavoriteResponse"
+
+  /cities/popular:
+    get:
+      operationId: getPopularCities
+      tags: [search]
+      summary: Get popular cities with parking availability
+      responses:
+        "200":
+          description: Popular cities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/City"
+
+  /pricing/suggest:
+    get:
+      operationId: getSuggestedPrice
+      tags: [listings]
+      summary: Get AI-suggested pricing for a location
+      parameters:
+        - name: city
+          in: query
+          required: true
+          schema: { type: string }
+        - name: vehicleType
+          in: query
+          schema: { type: string }
+        - name: pricingType
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Suggested pricing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PriceSuggestion"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    User:
+      type: object
+      required: [id, email, name, role]
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        name:
+          type: string
+        phone:
+          type: ["string", "null"]
+        avatar:
+          type: ["string", "null"]
+        role:
+          type: string
+          enum: [driver, host, both, admin]
+        vehicleType:
+          type: ["string", "null"]
+        vehiclePlate:
+          type: ["string", "null"]
+        rating:
+          type: ["number", "null"]
+        totalBookings:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+
+    UserUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        avatar:
+          type: string
+        role:
+          type: string
+        vehicleType:
+          type: string
+        vehiclePlate:
+          type: string
+
+    UserRegister:
+      type: object
+      required: [email, name]
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+
+    Listing:
+      type: object
+      required: [id, title, address, city, hostId, hourlyRate, status]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: ["string", "null"]
+        lat:
+          type: ["number", "null"]
+        lng:
+          type: ["number", "null"]
+        hostId:
+          type: integer
+        hostName:
+          type: ["string", "null"]
+        hostAvatar:
+          type: ["string", "null"]
+        hostRating:
+          type: ["number", "null"]
+        hourlyRate:
+          type: number
+        dailyRate:
+          type: ["number", "null"]
+        monthlyRate:
+          type: ["number", "null"]
+        pricingType:
+          type: string
+          enum: [hourly, daily, monthly, all]
+        vehicleTypes:
+          type: array
+          items:
+            type: string
+        amenities:
+          type: array
+          items:
+            type: string
+        photos:
+          type: array
+          items:
+            type: string
+        dimensions:
+          type: ["string", "null"]
+        totalSpots:
+          type: integer
+        availableSpots:
+          type: integer
+        rating:
+          type: ["number", "null"]
+        reviewCount:
+          type: ["integer", "null"]
+        status:
+          type: string
+          enum: [active, inactive, pending]
+        isFavorited:
+          type: ["boolean", "null"]
+        distance:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+
+    ListingDetail:
+      type: object
+      required: [id, title, address, city, hostId, hourlyRate, status]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: ["string", "null"]
+        lat:
+          type: ["number", "null"]
+        lng:
+          type: ["number", "null"]
+        hostId:
+          type: integer
+        hostName:
+          type: ["string", "null"]
+        hostAvatar:
+          type: ["string", "null"]
+        hostRating:
+          type: ["number", "null"]
+        hostTotalListings:
+          type: ["integer", "null"]
+        hourlyRate:
+          type: number
+        dailyRate:
+          type: ["number", "null"]
+        monthlyRate:
+          type: ["number", "null"]
+        pricingType:
+          type: string
+        vehicleTypes:
+          type: array
+          items:
+            type: string
+        amenities:
+          type: array
+          items:
+            type: string
+        photos:
+          type: array
+          items:
+            type: string
+        dimensions:
+          type: ["string", "null"]
+        totalSpots:
+          type: integer
+        availableSpots:
+          type: integer
+        rules:
+          type: ["string", "null"]
+        instructions:
+          type: ["string", "null"]
+        rating:
+          type: ["number", "null"]
+        reviewCount:
+          type: ["integer", "null"]
+        status:
+          type: string
+        isFavorited:
+          type: ["boolean", "null"]
+        createdAt:
+          type: string
+
+    ListingInput:
+      type: object
+      required: [title, address, city, hourlyRate, totalSpots, pricingType]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        hourlyRate:
+          type: number
+        dailyRate:
+          type: number
+        monthlyRate:
+          type: number
+        pricingType:
+          type: string
+        vehicleTypes:
+          type: array
+          items:
+            type: string
+        amenities:
+          type: array
+          items:
+            type: string
+        photos:
+          type: array
+          items:
+            type: string
+        dimensions:
+          type: string
+        totalSpots:
+          type: integer
+        rules:
+          type: string
+        instructions:
+          type: string
+
+    ListingUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        hourlyRate:
+          type: number
+        dailyRate:
+          type: number
+        monthlyRate:
+          type: number
+        pricingType:
+          type: string
+        vehicleTypes:
+          type: array
+          items:
+            type: string
+        amenities:
+          type: array
+          items:
+            type: string
+        photos:
+          type: array
+          items:
+            type: string
+        dimensions:
+          type: string
+        totalSpots:
+          type: integer
+        rules:
+          type: string
+        instructions:
+          type: string
+        status:
+          type: string
+
+    ListingsResponse:
+      type: object
+      required: [listings, total, page, limit]
+      properties:
+        listings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Listing"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    AvailabilityQuery:
+      type: object
+      required: [startDate, endDate]
+      properties:
+        startDate:
+          type: string
+        endDate:
+          type: string
+
+    AvailabilityResponse:
+      type: object
+      required: [available, bookedSlots]
+      properties:
+        available:
+          type: boolean
+        availableSpots:
+          type: integer
+        bookedSlots:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookedSlot"
+
+    BookedSlot:
+      type: object
+      required: [startDate, endDate]
+      properties:
+        startDate:
+          type: string
+        endDate:
+          type: string
+
+    Booking:
+      type: object
+      required: [id, listingId, driverId, startDate, endDate, status, totalPrice]
+      properties:
+        id:
+          type: integer
+        listingId:
+          type: integer
+        listingTitle:
+          type: ["string", "null"]
+        listingAddress:
+          type: ["string", "null"]
+        listingPhoto:
+          type: ["string", "null"]
+        driverId:
+          type: integer
+        driverName:
+          type: ["string", "null"]
+        driverAvatar:
+          type: ["string", "null"]
+        hostId:
+          type: ["integer", "null"]
+        startDate:
+          type: string
+        endDate:
+          type: string
+        pricingType:
+          type: string
+        totalPrice:
+          type: number
+        status:
+          type: string
+          enum: [pending, confirmed, active, completed, cancelled]
+        qrCode:
+          type: ["string", "null"]
+        vehicleType:
+          type: ["string", "null"]
+        vehiclePlate:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    BookingInput:
+      type: object
+      required: [listingId, startDate, endDate, pricingType, totalPrice]
+      properties:
+        listingId:
+          type: integer
+        startDate:
+          type: string
+        endDate:
+          type: string
+        pricingType:
+          type: string
+        totalPrice:
+          type: number
+        vehicleType:
+          type: string
+        vehiclePlate:
+          type: string
+        notes:
+          type: string
+
+    Review:
+      type: object
+      required: [id, listingId, reviewerId, rating]
+      properties:
+        id:
+          type: integer
+        listingId:
+          type: integer
+        bookingId:
+          type: ["integer", "null"]
+        reviewerId:
+          type: integer
+        reviewerName:
+          type: ["string", "null"]
+        reviewerAvatar:
+          type: ["string", "null"]
+        rating:
+          type: integer
+        comment:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    ReviewInput:
+      type: object
+      required: [listingId, rating]
+      properties:
+        listingId:
+          type: integer
+        bookingId:
+          type: integer
+        rating:
+          type: integer
+        comment:
+          type: string
+
+    DashboardStats:
+      type: object
+      required: [totalEarnings, totalBookings, activeListings, averageRating]
+      properties:
+        totalEarnings:
+          type: number
+        thisMonthEarnings:
+          type: number
+        totalBookings:
+          type: integer
+        activeBookings:
+          type: integer
+        activeListings:
+          type: integer
+        totalListings:
+          type: integer
+        averageRating:
+          type: number
+        occupancyRate:
+          type: number
+        pendingBookings:
+          type: integer
+
+    EarningsResponse:
+      type: object
+      required: [total, breakdown]
+      properties:
+        total:
+          type: number
+        breakdown:
+          type: array
+          items:
+            $ref: "#/components/schemas/EarningPeriod"
+
+    EarningPeriod:
+      type: object
+      required: [period, amount, bookings]
+      properties:
+        period:
+          type: string
+        amount:
+          type: number
+        bookings:
+          type: integer
+
+    FavoriteResponse:
+      type: object
+      required: [favorited]
+      properties:
+        favorited:
+          type: boolean
+
+    City:
+      type: object
+      required: [name, state, listingCount]
+      properties:
+        name:
+          type: string
+        state:
+          type: string
+        listingCount:
+          type: integer
+        averagePrice:
+          type: ["number", "null"]
+        imageUrl:
+          type: ["string", "null"]
+
+    PriceSuggestion:
+      type: object
+      required: [hourlyRate, dailyRate, monthlyRate]
+      properties:
+        hourlyRate:
+          type: number
+        dailyRate:
+          type: number
+        monthlyRate:
+          type: number
+        reasoning:
+          type: string
